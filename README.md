@@ -1,210 +1,207 @@
-# MultiBank QA Automation Framework
+# MultiBank Automation — QA Coding Challenge
 
-Production-grade Playwright + TypeScript automation framework for [trade.multibank.io](https://trade.multibank.io), covering Task 1 (Web UI Automation) and Task 2 (String Character Frequency) from the QA coding challenge.
+Playwright-based end-to-end test automation framework for [mb.io](https://mb.io/en), plus a standalone string algorithm solution (Task 2).
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 multibank-automation/
 ├── src/
-│   ├── pages/                   # Page Object Model classes
-│   │   ├── BasePage.ts          # Abstract base — shared helpers, smart waits
-│   │   ├── HomePage.ts          # Landing page: nav, banners, download links
-│   │   ├── TradingPage.ts       # Spot trading section & pair data
-│   │   ├── WhyMultibankPage.ts  # About Us → Why MultiBank? page
-│   │   └── index.ts             # Barrel export
-│   ├── tests/                   # Test specifications
-│   │   ├── navigation.spec.ts   # @navigation — nav bar, About Us, Why MultiBank
-│   │   ├── trading.spec.ts      # @trading — trading pairs, categories
-│   │   └── content.spec.ts      # @content — banners, App Store / Google Play links
-│   ├── data/                    # External test data (no hard-coded assertions)
-│   │   ├── navigationData.ts    # Expected nav items & component names
-│   │   ├── tradingData.ts       # Trading categories & expected pairs
-│   │   └── contentData.ts       # Banner counts, App Store URLs
-│   ├── reporters/
-│   │   └── customReporter.ts    # Markdown summary + coloured console output
-│   └── utils/
-│       └── stringFrequency.ts   # Task 2 — character frequency implementation
-├── .github/
-│   └── workflows/
-│       └── ci.yml               # GitHub Actions pipeline (multi-browser matrix)
-├── playwright.config.ts         # Playwright configuration
+│   ├── pages/                  # Page Object Models
+│   │   ├── BasePage.ts         # Shared navigation, consent handling
+│   │   ├── HomePage.ts         # mb.io/en home page
+│   │   ├── TradingPage.ts      # mb.io/en/explore — spot market
+│   │   └── WhyMultibankPage.ts # mb.io/en/company
+│   ├── tests/                  # All spec files
+│   │   ├── navigation.spec.ts  # Header, nav links, hero (@navigation)
+│   │   ├── trading.spec.ts     # Explore page, price table (@trading)
+│   │   ├── content.spec.ts     # Company page content (@content)
+│   │   └── stringFrequency.spec.ts  # Task 2 unit tests (@task2)
+│   ├── data/                   # Test data
+│   │   ├── navigationData.ts
+│   │   ├── tradingData.ts
+│   │   └── companyData.ts
+│   └── reporters/
+│       └── customReporter.ts
+├── task2/
+│   ├── stringFrequency.ts      # Task 2 implementation
+│   └── README.md               # Task 2 documentation
+├── reports/                    # Generated test output (gitignored)
+├── playwright.config.ts
 ├── tsconfig.json
-├── package.json
-└── README.md
+└── package.json
 ```
 
 ---
 
-## 🚀 Quick Start
+## Prerequisites
 
-### Prerequisites
+- Node.js >= 18
+- npm >= 9
 
-- Node.js ≥ 18
-- npm ≥ 9
+---
 
-### Installation
+## Setup
 
 ```bash
-git clone <your-repo-url>
-cd multibank-automation
+# Install dependencies
 npm install
+
+# Install Playwright browsers
 npx playwright install --with-deps
 ```
 
-### Run All Tests (Chromium by default)
+---
 
+## Running Tests
+
+### All tests (Chromium)
 ```bash
+# npm
 npm test
+
+# npx
+npx playwright test --project=chromium
 ```
 
-### Run on a Specific Browser
-
+### All browsers
 ```bash
+# npm
+npm run test:all-browsers
+
+# npx
+npx playwright test
+```
+
+### By browser
+```bash
+# npm
 npm run test:chromium
 npm run test:firefox
 npm run test:webkit
+
+# npx
+npx playwright test --project=chromium
+npx playwright test --project=firefox
+npx playwright test --project=webkit
 ```
 
-### Run All Browsers in Parallel
-
+### By tag
 ```bash
-npm run test:all-browsers
+# npm
+npm run test:navigation   # Header, nav links, hero section
+npm run test:trading      # Explore page, spot market, price table
+npm run test:content      # Company page content
+npm run task2:test        # Task 2 — string frequency unit tests
+
+# npx
+npx playwright test --grep @navigation --project=chromium
+npx playwright test --grep @trading --project=chromium
+npx playwright test --grep @content --project=chromium
+npx playwright test --grep @task2 --project=chromium
 ```
 
-### Run by Tag / Feature Area
-
+### Headed (visible browser)
 ```bash
-npm run test:navigation   # @navigation tests only
-npm run test:trading      # @trading tests only
-npm run test:content      # @content tests only
+# npm
+npm run test:headed
+
+# npx
+npx playwright test --headed --project=chromium
 ```
 
-### View HTML Report
-
+### Debug mode
 ```bash
-npm run test:report
-```
-
-### Debug Mode (headed, step-by-step)
-
-```bash
+# npm
 npm run test:debug
+
+# npx
+npx playwright test --debug --project=chromium
+```
+
+### Interactive UI mode
+```bash
+# npm
+npm run test:ui
+
+# npx
+npx playwright test --ui
 ```
 
 ---
 
-## 🧩 Architecture Decisions
+## Test Reports
 
-### Page Object Model (POM)
-
-Each page/feature area has its own class extending `BasePage`. This means:
-
-- **Single responsibility** — each class owns one page's selectors and interactions
-- **Reusability** — shared helpers live in `BasePage` (consent dismissal, smart waits, screenshots)
-- **Maintainability** — selector changes are isolated to one file
-
-### Smart Wait Strategy
-
-All waits are event-driven — no `page.waitForTimeout()` is used in tests:
-
-- `waitForLoadState('domcontentloaded')` + `document.readyState === 'complete'`
-- `expect(locator).toBeVisible({ timeout })` for element waits
-- `waitForResponse()` for API-triggered category switches
-- Brief `300ms` settle wait only used after category tab clicks (dynamic list swap)
-
-### External Test Data
-
-All assertions reference `src/data/*.ts` files. When the site changes (e.g. a new nav item is added) you update a single data file, not every test.
-
-### Resilient Selectors
-
-Selectors use multiple fallback strategies (`[class*="..."]` + role-based + text-based) to reduce brittleness to minor DOM changes. The strictest match is tried first.
-
-### Retry Strategy
-
-- CI: 2 retries per test (catches transient flakiness)
-- Local: 1 retry
-
----
-
-## 🌐 Cross-Browser Testing
-
-Five browser/device profiles are configured out-of-the-box:
-
-| Project | Engine | Viewport |
-|---------|--------|----------|
-| chromium | Chrome | 1440×900 |
-| firefox | Firefox | 1440×900 |
-| webkit | Safari | 1440×900 |
-| mobile-chrome | Chrome (Pixel 7) | 412×915 |
-| mobile-safari | Safari (iPhone 14) | 390×844 |
-
----
-
-## ♻️ CI/CD Pipeline
-
-GitHub Actions runs a matrix build across Chromium, Firefox, and WebKit on every push and PR. A nightly cron job (`02:00 UTC`) catches regressions. Artifacts (HTML reports, failure screenshots) are uploaded and retained for 14 days.
-
----
-
-## 📋 Task 2 — String Character Frequency
-
-### Usage
+Reports are generated automatically after each run.
 
 ```bash
-# Run with default input "hello world"
-npm run string-frequency
-
-# Run with custom input
-npx ts-node src/utils/stringFrequency.ts "your input here"
-
-# Run built-in self-tests
-RUN_TESTS=true npx ts-node src/utils/stringFrequency.ts
+# Open the HTML report
+npx playwright show-report reports/html
 ```
 
-### Example
-
-```
-Input  : "hello world"
-Output : h:1, e:1, l:3, o:2,  :1, w:1, r:1, d:1
-```
-
-### Assumptions
-
-| Decision | Choice |
-|----------|--------|
-| Case sensitivity | Yes — `'a'` and `'A'` are separate characters |
-| Whitespace | Counted — space/tab appear in output |
-| Special characters | Counted — all Unicode is supported |
-| Empty input | Returns `''` |
-
-### Complexity
-
-- **Time:** O(n) — single pass over the string
-- **Space:** O(k) — where k is the number of unique characters
+Reports are written to:
+- `reports/html/` — interactive HTML report
+- `reports/results.json` — machine-readable JSON
+- `reports/artifacts/` — screenshots and traces on failure
 
 ---
 
-## 🛠 Extending the Framework
+## Task 2 — String Frequency CLI
 
-### Add a new page object
+```bash
+# Run with the default example ("hello world")
+npx ts-node task2/stringFrequency.ts
 
-1. Create `src/pages/MyNewPage.ts` extending `BasePage`
+# Run with a custom string
+npx ts-node task2/stringFrequency.ts "your input here"
+
+# Run Task 2 unit tests
+npx playwright test --grep @task2 --project=chromium
+```
+
+---
+
+## Architecture
+
+### Page Object Model
+
+Every page under test has a corresponding class in `src/pages/` that extends `BasePage`. All locators are defined as `readonly` class properties in the constructor. Test files contain only assertions and orchestration — no `page.locator()` calls.
+
+### Test Data
+
+Static test data lives in `src/data/`. Data files export typed constants (strings, arrays, regex patterns). Tests import data by name — no magic strings in spec files.
+
+### Cross-browser
+
+The Playwright config defines 5 browser profiles: Chromium, Firefox, WebKit, Pixel 5 (mobile Chrome), and iPhone 13 (mobile Safari). `npm run test:all-browsers` runs the full suite across all three desktop browsers.
+
+### CI/CD
+
+`.github/workflows/ci.yml` runs the full matrix on push to `main`/`develop` and on pull requests. HTML reports and failure screenshots are uploaded as artifacts (retained 14 days).
+
+---
+
+## Assumptions & Trade-offs
+
+- **Base URL**: `https://mb.io/en` — the trading platform, not `trade.multibank.io`
+- **No authentication**: All tests run against public pages only
+- **Live data**: Price and percentage values are not asserted against fixed numbers — only format (regex) is validated
+- **Retries**: 1 retry locally, 2 on CI to handle transient network flakiness
+- **Recharts lazy rendering**: The chart test scrolls all rows into view before asserting, as Recharts only mounts SVGs when the container enters the viewport
+
+---
+
+## Extending the Framework
+
+**Add a new page:**
+1. Create `src/pages/NewPage.ts` extending `BasePage`
 2. Export it from `src/pages/index.ts`
-3. Add test data to `src/data/` if needed
-4. Write tests in `src/tests/myNewPage.spec.ts`
+3. Add test data to `src/data/newPageData.ts`
+4. Create `src/tests/newPage.spec.ts`
 
-### Add a new test data set
-
-Create a new file in `src/data/` and import it in the relevant test file. Never hard-code expected values inside test files.
-
----
-
-## ⚠️ Known Trade-offs
-
-- **Selector resilience vs. specificity** — broad `[class*="..."]` selectors are more resilient to CSS changes but may match unintended elements; `BasePage` uses `.first()` to mitigate this
-- **Cookie consent** — dismissed generically; site-specific selectors would be more reliable but require updates if the consent library changes
-- **Category API responses** — waited on optimistically; some category switches may be client-side only and won't fire a network event
+**Add a new test to an existing page:**
+1. Add any new locators to the relevant page class
+2. Add test data constants to the relevant data file
+3. Add the `test()` block to the spec file
