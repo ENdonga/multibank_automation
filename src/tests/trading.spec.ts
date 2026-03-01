@@ -11,6 +11,10 @@ import {
 
 /**
  * Trading Functionality Tests — mb.io/en/explore
+ *
+ * All locators are centralised in TradingPage.ts — no page.locator() calls here.
+ * This file contains only assertions and test orchestration logic.
+ *
  * @tag @trading
  */
 test.describe('Trading Functionality — Explore page @trading', () => {
@@ -48,7 +52,6 @@ test.describe('Trading Functionality — Explore page @trading', () => {
     await expect(tradingPage.depositsBanner).toContainText('Top up today');
   });
 
-  // Spot market section 
   test('Spot market section heading matches exactly', async () => {
     await expect(tradingPage.spotMarketHeading).toBeVisible();
     const text = await tradingPage.spotMarketHeading.textContent();
@@ -62,7 +65,6 @@ test.describe('Trading Functionality — Explore page @trading', () => {
     );
   });
 
-  // Price table heading + tabs 
   test('"Today\'s top crypto prices" heading is visible', async () => {
     await expect(tradingPage.cryptoPricesHeading).toBeVisible();
   });
@@ -70,14 +72,10 @@ test.describe('Trading Functionality — Explore page @trading', () => {
   test('price table shows all 3 filter tabs: Hot, Gainers, Losers', async () => {
     const labels = await tradingPage.getTabLabels();
     for (const expectedTab of priceTabs) {
-      expect(
-        labels.some(l => l.toLowerCase() === expectedTab.toLowerCase()),
-        `Tab "${expectedTab}" not found. Tabs found: ${labels.join(', ')}`
-      ).toBeTruthy();
+      expect(labels.some(l => l.toLowerCase() === expectedTab.toLowerCase()), `Tab "${expectedTab}" not found. Tabs found: ${labels.join(', ')}`).toBeTruthy();
     }
   });
 
-  // Pair rows: count + data structure 
   test('at least 5 pair rows are rendered in the table (tr[data-index])', async () => {
     const count = await tradingPage.getPairCount();
     expect(count).toBeGreaterThanOrEqual(5);
@@ -95,34 +93,26 @@ test.describe('Trading Functionality — Explore page @trading', () => {
   test('every pair row price cell matches $N,NNN.NN format', async () => {
     const pairs = await tradingPage.getTradingPairs(15);
     for (const pair of pairs) {
-      expect(
-        pair.price,
-        `Price "${pair.price}" for ${pair.symbol} does not match expected format`
-      ).toMatch(priceRegex);
+      expect(pair.price, `Price "${pair.price}" for ${pair.symbol} does not match expected format`).toMatch(priceRegex);
     }
   });
 
   test('every pair row change cell contains a percentage value', async () => {
     const pairs = await tradingPage.getTradingPairs(15);
     for (const pair of pairs) {
-      expect(
-        pair.change,
-        `Change "${pair.change}" for ${pair.symbol} does not contain a percentage`
-      ).toMatch(changeRegex);
+      expect(pair.change, `Change "${pair.change}" for ${pair.symbol} does not contain a percentage`).toMatch(changeRegex);
     }
   });
 
   test('every pair row has a direction indicator (up or down)', async () => {
     const pairs = await tradingPage.getTradingPairs(15);
     for (const pair of pairs) {
-      expect(
-        ['up', 'down'],
-        `Direction for ${pair.symbol} should be "up" or "down", got "${pair.direction}"`
-      ).toContain(pair.direction);
+      expect(['up', 'down'], `Direction for ${pair.symbol} should be "up" or "down", got "${pair.direction}"`).toContain(pair.direction);
     }
   });
 
   test('each pair row has a mini chart (recharts SVG) rendered', async () => {
+    await tradingPage.waitForCharts(5);
     const count = await tradingPage.allChartCells.count();
     expect(count).toBeGreaterThanOrEqual(5);
   });
@@ -144,14 +134,10 @@ test.describe('Trading Functionality — Explore page @trading', () => {
 
     for (const sym of coreSymbols) {
       expect(symbolMap.has(sym), `Ticker "${sym}" not found in pair rows`).toBeTruthy();
-      expect(
-        symbolMap.get(sym),
-        `Full name for ${sym} should be "${knownHotPairNames[sym]}"`
-      ).toBe(knownHotPairNames[sym]);
+      expect(symbolMap.get(sym), `Full name for ${sym} should be "${knownHotPairNames[sym]}"`).toBe(knownHotPairNames[sym]);
     }
   });
 
-  // Pair row links 
   test('each pair row links to /explore/<SYMBOL> detail page', async () => {
     const pairs = await tradingPage.getTradingPairs(5);
     for (const pair of pairs) {
@@ -159,7 +145,6 @@ test.describe('Trading Functionality — Explore page @trading', () => {
     }
   });
 
-  // Tab switching 
   test('Gainers tab is clickable and still shows pair rows', async () => {
     await tradingPage.clickTab(tradingPage.gainersTab);
     const count = await tradingPage.getPairCount();
@@ -178,7 +163,6 @@ test.describe('Trading Functionality — Explore page @trading', () => {
     await expect(tradingPage.rowSymbol(tradingPage.firstPairRow)).toHaveText('MBG');
   });
 
-  // Sidebar 
   test('Market sentiment widget is visible in sidebar', async () => {
     await expect(tradingPage.marketSentimentWidget).toBeVisible();
   });
