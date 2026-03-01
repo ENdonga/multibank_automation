@@ -15,8 +15,8 @@
     "test:trading": "playwright test --grep @trading --project=chromium",
     "test:content": "playwright test --grep @content --project=chromium",
     "test:report": "playwright show-report reports/html",
-    "string-frequency": "ts-node src/utils/stringFrequency.ts",
-    "string-frequency:test": "cross-env RUN_TESTS=true ts-node src/utils/stringFrequency.ts",
+    "task2": "ts-node task2/stringFrequency.ts",
+    "task2:test": "playwright test --grep @task2 --project=chromium --reporter=list",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit"
   },
