@@ -19,8 +19,7 @@ export const contentData: ContentData = {
     googlePlay: 'play.google.com',
   },
 
-  bannerCount: 1, // minimum number of banners expected
-
+  bannerCount: 1,
   footerSections: [
     'Company',
     'Trading',
