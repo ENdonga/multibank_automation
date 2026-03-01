@@ -148,7 +148,24 @@ Reports are written to:
 
 ---
 
-## Task 2 — String Frequency CLI
+## Test Evidence
+
+Screenshots from a full test run are available in [`test-artifacts/`](./test-artifacts/).
+
+| File | Description |
+|---|---|
+| `terminal.png` | Terminal output showing all tests passing across browsers |
+| `html.png` | Playwright HTML report showing test names, durations, and pass/fail status |
+
+To regenerate the report locally:
+
+```bash
+# Run all browsers
+npx playwright test
+
+# Open the HTML report
+npx playwright show-report reports/html
+```
 
 ```bash
 # Run with the default example ("hello world")
