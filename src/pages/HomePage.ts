@@ -2,24 +2,24 @@ import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 export class HomePage extends BasePage {
-  // ── Navigation ──
+  // Navigation
   readonly header: Locator;
   readonly mainNav: Locator;
   readonly navLinks: Locator;
   readonly signInButton: Locator;
   readonly signUpButton: Locator;
 
-  // ── Hero section ──
+  // Hero section
   readonly heroHeading: Locator;
   readonly downloadAppButton: Locator;
   readonly openAccountButton: Locator;
 
-  // ── Download section ──
+  // Download section
   readonly downloadSection: Locator;
   readonly appStoreLink: Locator;
   readonly googlePlayLink: Locator;
 
-  // ── Marketing banners ──
+  // Marketing banners
   readonly marketingBanners: Locator;
 
   constructor(page: Page) {
@@ -47,7 +47,7 @@ export class HomePage extends BasePage {
     await this.dismissConsentBanner();
   }
 
-  // ── Navigation helpers ──
+  // Navigation helpers
   async getNavLinkLabels(): Promise<string[]> {
     await expect(this.mainNav).toBeVisible();
     const count = await this.navLinks.count();
@@ -78,13 +78,13 @@ export class HomePage extends BasePage {
     };
   }
 
-  // ── Hero helpers ──
+  // Hero helpers
   async getHeroHeadingText(): Promise<string> {
     await expect(this.heroHeading).toBeVisible();
     return (await this.heroHeading.textContent())?.trim() ?? '';
   }
 
-  // ── Download section helpers ──
+  // Download section helpers
   async scrollToDownloadSection(): Promise<void> {
     try {
       await this.downloadSection.scrollIntoViewIfNeeded();

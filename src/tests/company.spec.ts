@@ -31,7 +31,6 @@ test.describe('Why MultiBank Group page @content', () => {
         expect(subheading).toContain(companyData.subheadingContains);
     });
 
-    // ── Stat cards ──
     test('all 3 stat cards are visible', async () => {
         const count = await companyPage.getStatCardCount();
         expect(count).toBe(companyData.stats.length);
