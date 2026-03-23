@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  playwright:
+    build: .
+    environment:
+      - BASE_URL=${BASE_URL:-https://mb.io}
+      - CI=true
+    volumes:
+      - ./reports:/app/reports
+      - ./test-artifacts:/app/test-artifacts
+    command: npx playwright test
+
+  playwright-chromium:
+    build: .
+    environment:
+      - BASE_URL=${BASE_URL:-https://mb.io}
+      - CI=true
+    volumes:
+      - ./reports:/app/reports
+    command: npx playwright test --project=chromium
