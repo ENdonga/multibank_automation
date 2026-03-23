@@ -7,10 +7,12 @@ export function characterFrequency(input: string): string {
 
     const freq = new Map<string, number>();
 
+    // iterate over each charatcer default to 0 if doesn't exist yet and increment by 1
     for (const char of input) {
         freq.set(char, (freq.get(char) ?? 0) + 1);
     }
 
+    // return the array output and join them by commas
     return Array.from(freq.entries())
         .map(([char, count]) => `${char}:${count}`)
         .join(', ');

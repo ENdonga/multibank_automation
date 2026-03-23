@@ -48,4 +48,9 @@ export class WhyMultibankPage extends BasePage {
   async getStatCardCount(): Promise<number> {
     return this.statCards.count();
   }
+
+  async isStatVisible(value: string, label: string): Promise<void> {
+    await expect(this.page.getByText(value)).toBeVisible();
+    await expect(this.page.getByText(label)).toBeVisible();
+  }
 }

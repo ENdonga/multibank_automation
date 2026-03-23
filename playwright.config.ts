@@ -12,7 +12,7 @@ export default defineConfig({
     ['list'],
   ],
   use: {
-    baseURL: 'https://mb.io/en',
+    baseURL: process.env.BASE_URL ?? 'https://mb.io',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'on-first-retry',
@@ -20,6 +20,10 @@ export default defineConfig({
     navigationTimeout: 30000,
     headless: true,
     viewport: { width: 1440, height: 900 },
+    geolocation: undefined,
+    contextOptions: {
+      permissions: []
+    }
   },
   projects: [
     {

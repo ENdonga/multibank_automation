@@ -1,13 +1,10 @@
 import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { HeaderComponent } from 'src/components/HeaderComponent';
 
 export class HomePage extends BasePage {
-  // Navigation
-  readonly header: Locator;
-  readonly mainNav: Locator;
-  readonly navLinks: Locator;
-  readonly signInButton: Locator;
-  readonly signUpButton: Locator;
+  // Header component
+  readonly header: HeaderComponent;
 
   // Hero section
   readonly heroHeading: Locator;
@@ -22,14 +19,27 @@ export class HomePage extends BasePage {
   // Marketing banners
   readonly marketingBanners: Locator;
 
+  // Expose nav locators from header component for backward compat with specs
+  get mainNav() {
+    return this.header.mainNav;
+  }
+
+  get navLinks() {
+    return this.header.navLinks;
+  }
+
+  get signInButton() {
+    return this.header.signInButton;
+  }
+
+  get signUpButton() {
+    return this.header.signUpButton;
+  }
+
   constructor(page: Page) {
     super(page);
 
-    this.header = page.locator('header').first();
-    this.mainNav = page.locator('nav[aria-label="Main"]');
-    this.navLinks = this.mainNav.locator('a');
-    this.signInButton = page.locator('a[href*="trade.mb.io/login"]').first();
-    this.signUpButton = page.locator('a[href*="trade.mb.io/register"]').first();
+    this.header = new HeaderComponent(page);
 
     this.heroHeading = page.locator('h3').first();
     this.downloadAppButton = page.getByRole('link', { name: /download the app/i }).first();
@@ -49,33 +59,20 @@ export class HomePage extends BasePage {
 
   // Navigation helpers
   async getNavLinkLabels(): Promise<string[]> {
-    await expect(this.mainNav).toBeVisible();
-    const count = await this.navLinks.count();
-    const labels: string[] = [];
-    for (let i = 0; i < count; i++) {
-      const text = (await this.navLinks.nth(i).textContent())?.trim() ?? '';
-      if (text) labels.push(text);
-    }
-    return labels;
+    return this.header.getNavLinkLabels();
   }
 
   async getNavLinkHref(label: string | RegExp): Promise<string | null> {
-    const link = this.mainNav.getByRole('link', { name: label });
-    await expect(link).toBeVisible();
-    return link.getAttribute('href');
+    return this.header.getNavLinkHref(label);
   }
 
   async clickNavLink(label: string | RegExp): Promise<void> {
-    const link = this.mainNav.getByRole('link', { name: label });
-    await this.safeClick(link);
+    await this.header.clickNavLink(typeof label === 'string' ? label : label.toString());
     await this.waitForPageReady();
   }
 
   async areCtaButtonsVisible(): Promise<{ signIn: boolean; signUp: boolean }> {
-    return {
-      signIn: await this.signInButton.isVisible(),
-      signUp: await this.signUpButton.isVisible(),
-    };
+    return await this.header.areCtaButtonsVisible()
   }
 
   // Hero helpers
